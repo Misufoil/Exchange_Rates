@@ -19,31 +19,7 @@ class CurrencyDiffUtil (
         return oldList[oldItemPosition].ID == newList[newItemPosition].ID
     }
 
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return when {
-            oldList[oldItemPosition].ID != newList[newItemPosition].ID -> {
-                false
-            }
-            oldList[oldItemPosition].Name != newList[newItemPosition].Name -> {
-                false
-            }
-            oldList[oldItemPosition].CharCode != newList[newItemPosition].CharCode -> {
-                false
-            }
-            oldList[oldItemPosition].Name != newList[newItemPosition].Name -> {
-                false
-            }
-            oldList[oldItemPosition].Nominal != newList[newItemPosition].Nominal -> {
-                false
-            }
-            oldList[oldItemPosition].Previous != newList[newItemPosition].Previous -> {
-                false
-            }
-            oldList[oldItemPosition].Value != newList[newItemPosition].Value -> {
-                false
-            }
-            else -> true
-        }
-    }
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+        oldList[oldItemPosition] == newList[newItemPosition]
 
 }

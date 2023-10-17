@@ -1,4 +1,4 @@
-package com.example.exchangerates.data.api
+package com.example.exchangerates.data.retrofit.api
 
 import com.example.exchangerates.BASE_URL
 import retrofit2.Retrofit

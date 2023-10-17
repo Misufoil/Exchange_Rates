@@ -1,7 +1,7 @@
-package com.example.exchangerates.data.repository
+package com.example.exchangerates.data.retrofit
 
 
-import com.example.exchangerates.data.api.RetrofitInstance
+import com.example.exchangerates.data.retrofit.api.RetrofitInstance
 import com.example.exchangerates.model.Currency
 import retrofit2.Response
 

@@ -1,14 +1,17 @@
 package com.example.exchangerates.screens.detail
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
+import com.example.exchangerates.R
 import com.example.exchangerates.databinding.FragmentDetailBinding
 import com.example.exchangerates.model.CurrencyItem
 
-class DetailFragment : Fragment() {
+class DetailFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentDetailBinding? = null
     private val binding get() = mBinding!!
     lateinit var currentCurrency: CurrencyItem
@@ -47,6 +50,10 @@ class DetailFragment : Fragment() {
                 false
             }
         }
+
+        val menuHost: MenuHost = requireActivity()
+        requireActivity().title = "Подробнее"
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
 
@@ -71,6 +78,21 @@ class DetailFragment : Fragment() {
     override fun onDestroy() {
         mBinding = null
         super.onDestroy()
+    }
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.detail_options_menu, menu)
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
+            R.id.item_close -> {
+                findNavController().popBackStack()
+                true
+            }
+
+            else -> false
+        }
     }
 
 

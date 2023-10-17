@@ -1,4 +1,4 @@
-package com.example.exchangerates.data.api
+package com.example.exchangerates.data.retrofit.api
 
 import com.example.exchangerates.model.Currency
 import retrofit2.Response
