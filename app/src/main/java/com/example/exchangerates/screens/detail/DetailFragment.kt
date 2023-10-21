@@ -1,39 +1,43 @@
 package com.example.exchangerates.screens.detail
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.exchangerates.R
 import com.example.exchangerates.databinding.FragmentDetailBinding
 import com.example.exchangerates.model.CurrencyItem
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.snackbar.Snackbar
 
 class DetailFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentDetailBinding? = null
     private val binding get() = mBinding!!
     lateinit var currentCurrency: CurrencyItem
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         mBinding = FragmentDetailBinding.inflate(layoutInflater, container, false)
-
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         currentCurrency = arguments?.getSerializable("currency", CurrencyItem::class.java)!!
-        init()
+        init(view)
     }
 
-    private fun init() {
+    private fun init(view: View) {
+        val viewModel = ViewModelProvider(this)[DetailViewModel::class.java]
+
         binding.apply {
             tvName.text = currentCurrency.Name
             tvCharCode.text = currentCurrency.CharCode
@@ -49,6 +53,11 @@ class DetailFragment : Fragment(), MenuProvider {
                 convertToRub(currentCurrency.Value, currentCurrency.Nominal)
                 false
             }
+
+            fabLike.setOnClickListener {
+                viewModel.addFavoriteCurrency(currentCurrency){}
+                Snackbar.make(view, "Currency saved successfully", Snackbar.LENGTH_SHORT).show()
+            }
         }
 
         val menuHost: MenuHost = requireActivity()
@@ -63,7 +72,6 @@ class DetailFragment : Fragment(), MenuProvider {
             val anotherAmount = rubleAmount / (value / nominal)
             binding.etSecond.setText(String.format("%.4f", anotherAmount))
         }
-
     }
 
     private fun convertToRub(value: Double, nominal: Int) {
@@ -72,7 +80,6 @@ class DetailFragment : Fragment(), MenuProvider {
             val rubleAmount = anotherAmount * (value / nominal)
             binding.etFirst.setText(String.format("%.4f", rubleAmount))
         }
-
     }
 
     override fun onDestroy() {
@@ -90,10 +97,7 @@ class DetailFragment : Fragment(), MenuProvider {
                 findNavController().popBackStack()
                 true
             }
-
             else -> false
         }
     }
-
-
 }

@@ -1,9 +1,10 @@
-package com.example.exchangerates.screens.currency
+package com.example.exchangerates.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.exchangerates.R
@@ -11,8 +12,6 @@ import com.example.exchangerates.databinding.CurrencyItemLayoutBinding
 import com.example.exchangerates.model.CurrencyItem
 
 class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>() {
-
-    private var currencyItems = emptyList<CurrencyItem>()
 
     class CurrencyViewHolder(view: View): RecyclerView.ViewHolder(view) {
         private val binding = CurrencyItemLayoutBinding.bind(view)
@@ -38,6 +37,18 @@ class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>(
 
     }
 
+    private val differCallBack = object : DiffUtil.ItemCallback<CurrencyItem>() {
+        override fun areItemsTheSame(oldItem: CurrencyItem, newItem: CurrencyItem): Boolean {
+            return oldItem.ID == newItem.ID
+        }
+
+        override fun areContentsTheSame(oldItem: CurrencyItem, newItem: CurrencyItem): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+    val differ = AsyncListDiffer(this, differCallBack)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyViewHolder {
         return CurrencyViewHolder(
             LayoutInflater.from(parent.context).inflate(
@@ -49,7 +60,7 @@ class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>(
     }
 
     override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int) {
-        val currency = currencyItems[position]
+        val currency = differ.currentList[position]
         holder.bind(currency)
         holder.itemView.setOnClickListener {
             onItemClickListener?.let { it(currency) }
@@ -57,14 +68,7 @@ class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>(
     }
 
     override fun getItemCount(): Int {
-        return currencyItems.size
-    }
-
-    fun setList(list: List<CurrencyItem>) {
-        val diffUtil = CurrencyDiffUtil(currencyItems, list)
-        val diffResult = DiffUtil.calculateDiff(diffUtil)
-        currencyItems = list
-        diffResult.dispatchUpdatesTo(this)
+        return differ.currentList.size
     }
 
     private var onItemClickListener: ((CurrencyItem) -> Unit)? = null
@@ -72,6 +76,4 @@ class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>(
     fun setOnItemClickListener(listener: (CurrencyItem) -> Unit) {
         onItemClickListener = listener
     }
-
-    fun getList(): List<CurrencyItem> = currencyItems
 }
