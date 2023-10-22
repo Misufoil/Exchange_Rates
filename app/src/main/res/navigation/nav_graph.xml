@@ -9,7 +9,7 @@
         android:id="@+id/currencyFragment"
         android:name="com.example.exchangerates.screens.currency.CurrencyFragment"
         android:label="fragment_currency"
-        tools:layout="@layout/fragment_currency" >
+        tools:layout="@layout/fragment_currency">
         <action
             android:id="@+id/action_currencyFragment_to_detailFragment"
             app:destination="@id/detailFragment" />
@@ -21,7 +21,7 @@
         android:id="@+id/favoriteFragment"
         android:name="com.example.exchangerates.screens.favorite.FavoriteFragment"
         android:label="fragment_favorite"
-        tools:layout="@layout/fragment_favorite" >
+        tools:layout="@layout/fragment_favorite">
         <action
             android:id="@+id/action_favoriteFragment_to_detailFragment"
             app:destination="@id/detailFragment" />
@@ -30,7 +30,7 @@
         android:id="@+id/detailFragment"
         android:name="com.example.exchangerates.screens.detail.DetailFragment"
         android:label="fragment_detail"
-        tools:layout="@layout/fragment_detail" >
+        tools:layout="@layout/fragment_detail">
 
     </fragment>
 </navigation>

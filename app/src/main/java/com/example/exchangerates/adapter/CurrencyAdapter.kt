@@ -11,9 +11,9 @@ import com.example.exchangerates.R
 import com.example.exchangerates.databinding.CurrencyItemLayoutBinding
 import com.example.exchangerates.model.CurrencyItem
 
-class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>() {
+class CurrencyAdapter : RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>() {
 
-    class CurrencyViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    class CurrencyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val binding = CurrencyItemLayoutBinding.bind(view)
         fun bind(item: CurrencyItem) {
             binding.apply {
@@ -21,7 +21,7 @@ class CurrencyAdapter: RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>(
                 tvCharCode.text = item.CharCode
                 val difference = item.Value - item.Previous
 
-                tvValue.text =  String.format("%.4f", item.Value / item.Nominal)
+                tvValue.text = String.format("%.4f", item.Value / item.Nominal) + " ₽"
 
                 val sign = if (difference >= 0) {
                     tvDifference.setTextColor(Color.GREEN)

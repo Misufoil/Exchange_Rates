@@ -3,8 +3,8 @@ package com.example.exchangerates.screens.currency
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.appcompat.widget.SearchView
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -12,7 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.exchangerates.R
-import com.example.exchangerates.SEARCH_NEWS_TAME_DELAY
+import com.example.exchangerates.util.SEARCH_NEWS_TAME_DELAY
 import com.example.exchangerates.adapter.CurrencyAdapter
 import com.example.exchangerates.databinding.FragmentCurrencyBinding
 import kotlinx.coroutines.Job
@@ -38,7 +38,7 @@ class CurrencyFragment : Fragment(), MenuProvider {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         init()
-        }
+    }
 
     private fun init() {
         viewModel = ViewModelProvider(this)[CurrencyViewModel::class.java]
@@ -52,7 +52,7 @@ class CurrencyFragment : Fragment(), MenuProvider {
                     response.body()!!.Valute.values.sortedBy { it.CharCode.lowercase() }
                 currencyAdapter.differ.submitList(sortedList)
             }
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
         }
 
@@ -114,30 +114,12 @@ class CurrencyFragment : Fragment(), MenuProvider {
     }
 
     private fun searchCurrency(query: String) {
-        Log.d("Search", "Searching for: $query")
-        viewModel.searchDatabase(query).observe(this) { list ->
-            list.let {
-                currencyAdapter.differ.submitList(it)
-            }
+        val filteredAndSortedCurrencies = if (query.isEmpty()) {
+            viewModel.myCurrencyList.value?.body()?.Valute?.values?.sortedBy { it.CharCode.lowercase() }
+        } else {
+            viewModel.filterAndSortCurrencies(query)
         }
+
+        currencyAdapter.differ.submitList(filteredAndSortedCurrencies)
     }
-
-    //override fun onQueryTextSubmit(query: String?): Boolean {
-    //                            Log.i("HOME_FRAGMENT", "NOW IN onQueryTextSubmit")
-    //                            return true
-    //                        }
-    //
-    //                        //                    var job: Job? = null
-    //                        override fun onQueryTextChange(query: String?): Boolean {
-    //                            Log.i("HOME_FRAGMENT", "NOW IN onQueryTextChange")
-    //                            if (query != null) {
-    ////                            job?.cancel()
-    ////                            job = MainScope().launch {
-    ////                                delay(SEARCH_NEWS_TAME_DELAY)
-    //                                searchCurrency(query)
-    ////                            }
-    //                            }
-    //                            return true
-    //                        }
-
 }

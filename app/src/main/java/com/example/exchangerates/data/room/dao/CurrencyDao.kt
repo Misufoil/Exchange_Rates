@@ -14,8 +14,4 @@ interface CurrencyDao {
 
     @Delete
     suspend fun delete(currencyItem: CurrencyItem)
-
-    @Query("SELECT * FROM currency WHERE CharCode LIKE :searchQuery OR Name LIKE :searchQuery")
-    fun searchCurrency(searchQuery: String): LiveData<List<CurrencyItem>>
-
 }

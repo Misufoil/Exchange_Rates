@@ -1,4 +1,4 @@
-package com.example.exchangerates
+package com.example.exchangerates.util
 
 import com.example.exchangerates.data.room.repository.CurrencyRepositoryRealization
 

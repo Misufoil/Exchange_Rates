@@ -1,6 +1,6 @@
 package com.example.exchangerates.data.retrofit.api
 
-import com.example.exchangerates.BASE_URL
+import com.example.exchangerates.util.BASE_URL
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -15,5 +15,4 @@ object RetrofitInstance {
     val api: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
-
 }

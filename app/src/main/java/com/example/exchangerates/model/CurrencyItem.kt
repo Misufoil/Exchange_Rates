@@ -16,4 +16,4 @@ data class CurrencyItem(
     val Name: String,
     val Value: Double,
     val Previous: Double
-): Serializable
+) : Serializable

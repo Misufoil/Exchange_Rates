@@ -25,7 +25,7 @@ class FavoriteFragment() : Fragment(), MenuProvider {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         mBinding = FragmentFavoriteBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -47,11 +47,9 @@ class FavoriteFragment() : Fragment(), MenuProvider {
             Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
         }
 
-
         val menuHost: MenuHost = requireActivity()
         requireActivity().title = "ИЗБРАННОЕ (RUB)"
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
 
         favoriteAdapter.setOnItemClickListener {
             val bundle = Bundle()
@@ -94,7 +92,6 @@ class FavoriteFragment() : Fragment(), MenuProvider {
         }
     }
 
-
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.favorite_options_menu, menu)
     }
@@ -105,7 +102,6 @@ class FavoriteFragment() : Fragment(), MenuProvider {
                 findNavController().popBackStack()
                 true
             }
-
             else -> false
         }
     }

@@ -1,19 +1,16 @@
 package com.example.exchangerates.screens.detail
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.*
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.exchangerates.R
 import com.example.exchangerates.databinding.FragmentDetailBinding
 import com.example.exchangerates.model.CurrencyItem
-import com.google.android.material.color.MaterialColors
 import com.google.android.material.snackbar.Snackbar
 
 class DetailFragment : Fragment(), MenuProvider {
@@ -41,7 +38,8 @@ class DetailFragment : Fragment(), MenuProvider {
         binding.apply {
             tvName.text = currentCurrency.Name
             tvCharCode.text = currentCurrency.CharCode
-            tvValue.text = currentCurrency.Value.toString()
+            tvValue.text = String.format("%.4f", currentCurrency.Value / currentCurrency.Nominal) + " ₽"
+            //"${currentCurrency.Value}₽"
             tilSecond.hint = "Сумма ${currentCurrency.CharCode}"
 
             etFirst.setOnKeyListener { _, _, _ ->
@@ -55,7 +53,7 @@ class DetailFragment : Fragment(), MenuProvider {
             }
 
             fabLike.setOnClickListener {
-                viewModel.addFavoriteCurrency(currentCurrency){}
+                viewModel.addFavoriteCurrency(currentCurrency) {}
                 Snackbar.make(view, "Currency saved successfully", Snackbar.LENGTH_SHORT).show()
             }
         }

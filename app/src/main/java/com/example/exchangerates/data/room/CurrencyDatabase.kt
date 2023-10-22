@@ -11,8 +11,7 @@ import com.example.exchangerates.model.CurrencyItem
     entities = [CurrencyItem::class],
     version = 1
 )
-abstract class CurrencyDatabase: RoomDatabase() {
-
+abstract class CurrencyDatabase : RoomDatabase() {
     abstract fun getCurrencyDao(): CurrencyDao
 
     companion object {
@@ -21,7 +20,7 @@ abstract class CurrencyDatabase: RoomDatabase() {
         private val Lock = Any()
 
         operator fun invoke(context: Context) = instance ?: synchronized(Lock) {
-            instance ?: createDatabase(context).also { instance = it}
+            instance ?: createDatabase(context).also { instance = it }
         }
 
         private fun createDatabase(context: Context) =

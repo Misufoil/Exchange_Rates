@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import com.example.exchangerates.data.room.dao.CurrencyDao
 import com.example.exchangerates.model.CurrencyItem
 
-class CurrencyRepositoryRealization(private val moviesDao: CurrencyDao): CurrencyRepository  {
+class CurrencyRepositoryRealization(private val moviesDao: CurrencyDao) : CurrencyRepository {
     override val allCurrency: LiveData<List<CurrencyItem>>
         get() = moviesDao.getFavoriteMovies()
 
@@ -17,10 +17,4 @@ class CurrencyRepositoryRealization(private val moviesDao: CurrencyDao): Currenc
         moviesDao.delete(currencyItem)
         onSuccess()
     }
-
-    override fun searchCurrency(searchQuery: String): LiveData<List<CurrencyItem>> {
-       return moviesDao.searchCurrency("%$searchQuery%")
-    }
-
-
 }
