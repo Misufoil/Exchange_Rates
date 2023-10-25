@@ -39,7 +39,6 @@ class DetailFragment : Fragment(), MenuProvider {
             tvName.text = currentCurrency.Name
             tvCharCode.text = currentCurrency.CharCode
             tvValue.text = String.format("%.4f", currentCurrency.Value / currentCurrency.Nominal) + " ₽"
-            //"${currentCurrency.Value}₽"
             tilSecond.hint = "Сумма ${currentCurrency.CharCode}"
 
             etFirst.setOnKeyListener { _, _, _ ->

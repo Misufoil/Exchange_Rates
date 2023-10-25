@@ -32,7 +32,7 @@ class FavoriteFragment() : Fragment(), MenuProvider {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init(view)//!!!!!!!!!!!!!!!!!!!!!!!!!!
+        init(view)
     }
 
     private fun init(view: View) {
@@ -76,10 +76,10 @@ class FavoriteFragment() : Fragment(), MenuProvider {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val currency = favoriteAdapter.differ.currentList[position]
-                viewModel.deleteFavoriteCurrency(currency){}
+                viewModel.deleteFavoriteCurrency(currency) {}
                 Snackbar.make(view, "Successfully deleted currency", Snackbar.LENGTH_LONG).apply {
                     setAction("Undo") {
-                        viewModel.addFavoriteCurrency(currency){}
+                        viewModel.addFavoriteCurrency(currency) {}
                     }
                     show()
                 }

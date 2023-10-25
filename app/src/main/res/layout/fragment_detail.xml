@@ -46,8 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:textSize="20sp"
                 android:text="ЦБ РФ"
+                android:textSize="20sp"
                 app:layout_constraintBaseline_toBaselineOf="@id/tv_value"
                 app:layout_constraintEnd_toStartOf="@+id/tv_value"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -144,6 +144,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="32dp"
+        android:contentDescription="@string/btn_add_currency_to_favorite_list"
         android:src="@drawable/ic_baseline_favorite_24"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"

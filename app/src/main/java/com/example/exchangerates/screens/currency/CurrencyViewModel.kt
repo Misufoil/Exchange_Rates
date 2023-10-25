@@ -38,7 +38,6 @@ class CurrencyViewModel(application: Application) : AndroidViewModel(application
         val lowercaseQuery = query.lowercase()
 
         return myCurrencyList.value?.body()!!.Valute.values.filter { currency ->
-            // Проверка наличия запроса в полях Name или NumCode
             currency.Name.lowercase().contains(lowercaseQuery) ||
                     currency.CharCode.lowercase().contains(lowercaseQuery)
         }.sortedWith(compareBy({ it.Name }, { it.CharCode }))
