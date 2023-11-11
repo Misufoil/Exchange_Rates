@@ -16,6 +16,9 @@ import com.example.exchangerates.model.CurrencyItem
 import com.example.exchangerates.model.GraphPoint
 import com.example.exchangerates.util.PARSING_URL
 import com.google.android.material.snackbar.Snackbar
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter
+import com.jjoe64.graphview.series.DataPoint
+import com.jjoe64.graphview.series.LineGraphSeries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,8 +30,10 @@ import java.util.*
 class DetailFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentDetailBinding? = null
     private val binding get() = mBinding!!
-    lateinit var currentCurrency: CurrencyItem
+    private lateinit var currentCurrency: CurrencyItem
+    lateinit var viewModel: DetailViewModel
     private val myGraphPoints = mutableListOf<GraphPoint>()
+    private val graphPointsLock = Object()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,7 +50,7 @@ class DetailFragment : Fragment(), MenuProvider {
     }
 
     private fun init(view: View) {
-        val viewModel = ViewModelProvider(this)[DetailViewModel::class.java]
+        viewModel = ViewModelProvider(this)[DetailViewModel::class.java]
 
         binding.apply {
             tvName.text = currentCurrency.Name
@@ -59,7 +64,6 @@ class DetailFragment : Fragment(), MenuProvider {
             btnFromDate.text = selectedData
             btnToDate.text = selectedData
 
-
             etFirst.setOnKeyListener { _, _, _ ->
                 convertToAnother(currentCurrency.Value, currentCurrency.Nominal)
                 false
@@ -68,11 +72,6 @@ class DetailFragment : Fragment(), MenuProvider {
             etSecond.setOnKeyListener { _, _, _ ->
                 convertToRub(currentCurrency.Value, currentCurrency.Nominal)
                 false
-            }
-
-            fabLike.setOnClickListener {
-                viewModel.addFavoriteCurrency(currentCurrency) {}
-                Snackbar.make(view, "Currency saved successfully", Snackbar.LENGTH_SHORT).show()
             }
 
             btnFromDate.setOnClickListener {
@@ -119,8 +118,6 @@ class DetailFragment : Fragment(), MenuProvider {
                         btnToDate.text.toString()
                     )
                 }
-                Toast.makeText(requireContext(), "correct", Toast.LENGTH_SHORT).show()
-
             }
         }
 
@@ -139,6 +136,8 @@ class DetailFragment : Fragment(), MenuProvider {
             val trElements = document.select("table[class=data]")
                 .select("tr")
 
+
+            myGraphPoints.clear()
             for (i in 2 until trElements.size) {
                 val row = trElements[i]
                 val tdElements = row.select("td")
@@ -150,9 +149,14 @@ class DetailFragment : Fragment(), MenuProvider {
                     "%.4f",
                     tdElements[2].text().replace(",", ".").toDouble() / nominal
                 ).toDouble()
+                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
-                myGraphPoints.add(GraphPoint(date, value))
+                myGraphPoints.add(GraphPoint(dateFormat.parse(date) as Date, value))
             }
+            withContext(Dispatchers.Main) {
+                buildGraph()
+            }
+
         } catch (e: IOException) {
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "error", Toast.LENGTH_SHORT).show()
@@ -188,11 +192,72 @@ class DetailFragment : Fragment(), MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
+            R.id.item_save -> {
+                viewModel.addFavoriteCurrency(currentCurrency) {}
+                view?.let {
+                    Snackbar.make(it, "Currency saved successfully", Snackbar.LENGTH_SHORT).show()
+                }
+                true
+            }
+
             R.id.item_close -> {
                 findNavController().popBackStack()
                 true
             }
             else -> false
         }
+    }
+
+    private fun buildGraph() {
+//            Array(100) { i ->
+//                DataPoint(i.toDouble(), (i * i % 10).toDouble())
+//            }
+        if (myGraphPoints.isNotEmpty()) {
+            myGraphPoints.sortBy { it.date }
+            val series: LineGraphSeries<DataPoint> = LineGraphSeries(myGraphPoints.map {
+                DataPoint(it.date, it.value)
+            }.toTypedArray())
+
+            // on below line we are adding
+            // data series to our graph view.
+            binding.idGraphView.addSeries(series)
+
+
+            // set date label formatter
+            binding.idGraphView.gridLabelRenderer.labelFormatter =
+                DateAsXAxisLabelFormatter(activity);
+            //binding.idGraphView.gridLabelRenderer.numHorizontalLabels = 3; // only 4 because of the space
+
+
+            binding.idGraphView.animate()
+
+            binding.idGraphView.viewport.setMinX(myGraphPoints[0].date.time.toDouble());
+            binding.idGraphView.viewport.setMaxX(myGraphPoints.last().date.time.toDouble());
+            binding.idGraphView.viewport.isXAxisBoundsManual = true;
+
+
+// as we use dates as labels, the human rounding to nice readable numbers
+// is not necessary
+            binding.idGraphView.gridLabelRenderer.setHumanRounding(false);
+//
+        }
+
+//        // on below line we are setting scrollable
+//        // for point graph view
+//        binding.idGraphView.viewport.isScrollable = true
+//
+//        // on below line we are setting scalable.
+//        binding.idGraphView.viewport.isScalable = true
+//
+//        // on below line we are setting scalable y
+//        binding.idGraphView.viewport.setScalableY(true)
+//
+//        // on below line we are setting scrollable y
+//        binding.idGraphView.viewport.setScrollableY(true)
+//
+//        // on below line we are setting color for series.
+//        series.color = R.color.purple_200
+//
+
     }
 }
