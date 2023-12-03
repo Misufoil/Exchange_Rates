@@ -16,8 +16,7 @@ import com.example.exchangerates.adapter.CurrencyAdapter
 import com.example.exchangerates.databinding.FragmentFavoriteBinding
 import com.google.android.material.snackbar.Snackbar
 
-
-class FavoriteFragment() : Fragment(), MenuProvider {
+class FavoriteFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentFavoriteBinding? = null
     private val binding get() = mBinding!!
     private val favoriteAdapter by lazy { CurrencyAdapter() }
@@ -104,5 +103,10 @@ class FavoriteFragment() : Fragment(), MenuProvider {
             }
             else -> false
         }
+    }
+
+    override fun onDestroyView() {
+        mBinding = null
+        super.onDestroyView()
     }
 }

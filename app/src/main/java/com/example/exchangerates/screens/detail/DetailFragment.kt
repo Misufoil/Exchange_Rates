@@ -1,5 +1,6 @@
 package com.example.exchangerates.screens.detail
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -14,26 +15,35 @@ import com.example.exchangerates.R
 import com.example.exchangerates.databinding.FragmentDetailBinding
 import com.example.exchangerates.model.CurrencyItem
 import com.example.exchangerates.model.GraphPoint
+import com.example.exchangerates.screens.detail.util.DateAxisValueFormatter
 import com.example.exchangerates.util.PARSING_URL
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.snackbar.Snackbar
-import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter
-import com.jjoe64.graphview.series.DataPoint
-import com.jjoe64.graphview.series.LineGraphSeries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class DetailFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentDetailBinding? = null
     private val binding get() = mBinding!!
     private lateinit var currentCurrency: CurrencyItem
-    lateinit var viewModel: DetailViewModel
+    private lateinit var viewModel: DetailViewModel
     private val myGraphPoints = mutableListOf<GraphPoint>()
-    private val graphPointsLock = Object()
+    private var mChart: LineChart? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,21 +56,24 @@ class DetailFragment : Fragment(), MenuProvider {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         currentCurrency = arguments?.getSerializable("currency", CurrencyItem::class.java)!!
-        init(view)
+        init()
+        configureChart()
     }
 
-    private fun init(view: View) {
+    private fun init() {
         viewModel = ViewModelProvider(this)[DetailViewModel::class.java]
 
         binding.apply {
             tvName.text = currentCurrency.Name
             tvCharCode.text = currentCurrency.CharCode
-            tvValue.text =
-                String.format("%.4f", currentCurrency.Value / currentCurrency.Nominal) + " ₽"
+            tvValue.text = "%.4f ₽".format(currentCurrency.Value / currentCurrency.Nominal)
             tilSecond.hint = "Сумма ${currentCurrency.CharCode}"
 
-            val selectedData = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
 
+
+            mChart = idGraphView
+
+            val selectedData = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
             btnFromDate.text = selectedData
             btnToDate.text = selectedData
 
@@ -126,37 +139,105 @@ class DetailFragment : Fragment(), MenuProvider {
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    private fun configureChart() {
+        mChart?.apply {
+            // Настройка внешнего вида графика
+            description.isEnabled = false
+            setTouchEnabled(true)
+            setDrawGridBackground(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
+
+            val textColor = MaterialColors.getColor(
+                this.context, com.google.android.material.R.attr.colorOnSecondary, Color.BLACK
+            )
+
+            // Настройка оси X
+            xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.valueFormatter = DateAxisValueFormatter()
+            xAxis.labelRotationAngle = -45f
+            xAxis.setDrawGridLines(true)
+            xAxis.textColor = textColor
+
+            val oneDayInMillis = 24 * 60 * 60 * 1000
+            xAxis.granularity = oneDayInMillis.toFloat()
+
+            // Настройка оси Y
+            axisRight.isEnabled = false
+            axisLeft.setDrawGridLines(true)
+            axisLeft.textColor = textColor
+
+            // Отключение легенды
+            legend.isEnabled = false
+
+            setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                override fun onValueSelected(e: Entry?, h: Highlight?) {
+                    if (e != null) {
+                        val inputDate = e.data.toString()
+                        val inputFormatter = DateTimeFormatter.ofPattern(
+                            "EEE MMM dd HH:mm:ss 'GMT'xxx yyyy",
+                            Locale.US
+                        )
+                        val outputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.US)
+
+                        try {
+                            val dateTime = LocalDateTime.parse(inputDate, inputFormatter)
+                            val outputDate = dateTime.format(outputFormatter)
+
+                            //включить описание
+                            description.isEnabled = true
+                            description.textSize = 12f
+                            description.text = "Date: $outputDate\nValue: ${e.y}"
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                override fun onNothingSelected() {
+                    // Вызывается, когда нет выбранных точек
+                }
+            })
+        }
+    }
+
     private suspend fun getGraphPoints(id: String, fromDate: String, toDate: String) {
         try {
             val url =
                 "$PARSING_URL&UniDbQuery.VAL_NM_RQ=$id&UniDbQuery.From=$fromDate&UniDbQuery.To=$toDate"
-            // "https://www.cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.so=1&UniDbQuery.mode=1&UniDbQuery.date_req1=&UniDbQuery.date_req2=&UniDbQuery.VAL_NM_RQ=R01060&UniDbQuery.From=10.08.2023&UniDbQuery.To=19.08.2023"
-
             val document = Jsoup.connect(url).get()
-            val trElements = document.select("table[class=data]")
-                .select("tr")
-
+            val trElements = document.select("table[class=data]").select("tr")
 
             myGraphPoints.clear()
-            for (i in 2 until trElements.size) {
-                val row = trElements[i]
-                val tdElements = row.select("td")
+            if (trElements != null) {
+                for (i in 2 until trElements.size) {
+                    val row = trElements[i]
+                    val tdElements = row.select("td")
+                    val date = tdElements[0].text()
+                    val nominal = tdElements[1].text().toDouble()
+                    val value = String.format(
+                        Locale.US,
+                        "%.4f",
+                        tdElements[2].text().replace(",", ".").toDouble() / nominal
+                    ).toDouble()
+                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
-                val date = tdElements[0].text()
-                val nominal = tdElements[1].text().toDouble()
-                val value = String.format(
-                    Locale.US,
-                    "%.4f",
-                    tdElements[2].text().replace(",", ".").toDouble() / nominal
-                ).toDouble()
-                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                    myGraphPoints.add(0, (GraphPoint(dateFormat.parse(date) as Date, value)))
+                }
 
-                myGraphPoints.add(GraphPoint(dateFormat.parse(date) as Date, value))
+                withContext(Dispatchers.Main) {
+                    buildGraph()
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "За данный период нет данных.",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
             }
-            withContext(Dispatchers.Main) {
-                buildGraph()
-            }
-
         } catch (e: IOException) {
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "error", Toast.LENGTH_SHORT).show()
@@ -164,6 +245,27 @@ class DetailFragment : Fragment(), MenuProvider {
         }
     }
 
+    private fun buildGraph() {
+        if (myGraphPoints.isNotEmpty()) {
+            val values =
+                myGraphPoints.map { Entry(it.date.time.toFloat(), it.value.toFloat(), it.date) }
+            val set1 = LineDataSet(values, "DataSet 1")
+            set1.color = Color.rgb(95, 226, 156)
+            set1.lineWidth = 2f
+            set1.setDrawCircles(true)
+            set1.setDrawValues(true)
+
+            set1.valueTextSize = 8f
+
+            val dataSets: ArrayList<ILineDataSet> = ArrayList()
+            dataSets.add(set1)
+
+            val data = LineData(dataSets)
+
+            mChart?.data = data
+            mChart?.invalidate()
+        }
+    }
 
     private fun convertToAnother(value: Double, nominal: Int) {
         val rubleAmount = binding.etFirst.text.toString().toDoubleOrNull()
@@ -179,11 +281,6 @@ class DetailFragment : Fragment(), MenuProvider {
             val rubleAmount = anotherAmount * (value / nominal)
             binding.etFirst.setText(String.format("%.4f", rubleAmount))
         }
-    }
-
-    override fun onDestroy() {
-        mBinding = null
-        super.onDestroy()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -208,56 +305,8 @@ class DetailFragment : Fragment(), MenuProvider {
         }
     }
 
-    private fun buildGraph() {
-//            Array(100) { i ->
-//                DataPoint(i.toDouble(), (i * i % 10).toDouble())
-//            }
-        if (myGraphPoints.isNotEmpty()) {
-            myGraphPoints.sortBy { it.date }
-            val series: LineGraphSeries<DataPoint> = LineGraphSeries(myGraphPoints.map {
-                DataPoint(it.date, it.value)
-            }.toTypedArray())
-
-            // on below line we are adding
-            // data series to our graph view.
-            binding.idGraphView.addSeries(series)
-
-
-            // set date label formatter
-            binding.idGraphView.gridLabelRenderer.labelFormatter =
-                DateAsXAxisLabelFormatter(activity);
-            //binding.idGraphView.gridLabelRenderer.numHorizontalLabels = 3; // only 4 because of the space
-
-
-            binding.idGraphView.animate()
-
-            binding.idGraphView.viewport.setMinX(myGraphPoints[0].date.time.toDouble());
-            binding.idGraphView.viewport.setMaxX(myGraphPoints.last().date.time.toDouble());
-            binding.idGraphView.viewport.isXAxisBoundsManual = true;
-
-
-// as we use dates as labels, the human rounding to nice readable numbers
-// is not necessary
-            binding.idGraphView.gridLabelRenderer.setHumanRounding(false);
-//
-        }
-
-//        // on below line we are setting scrollable
-//        // for point graph view
-//        binding.idGraphView.viewport.isScrollable = true
-//
-//        // on below line we are setting scalable.
-//        binding.idGraphView.viewport.isScalable = true
-//
-//        // on below line we are setting scalable y
-//        binding.idGraphView.viewport.setScalableY(true)
-//
-//        // on below line we are setting scrollable y
-//        binding.idGraphView.viewport.setScrollableY(true)
-//
-//        // on below line we are setting color for series.
-//        series.color = R.color.purple_200
-//
-
+    override fun onDestroyView() {
+        mBinding = null
+        super.onDestroyView()
     }
 }

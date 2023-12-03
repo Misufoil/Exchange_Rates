@@ -9,7 +9,7 @@ import com.example.exchangerates.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
     private var mBinding: ActivityMainBinding? = null
     private val binding get() = mBinding!!
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

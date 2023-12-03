@@ -5,17 +5,17 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.exchangerates.util.REALIZATION
 import com.example.exchangerates.data.retrofit.Repository
 import com.example.exchangerates.data.room.CurrencyDatabase
 import com.example.exchangerates.data.room.repository.CurrencyRepositoryRealization
 import com.example.exchangerates.model.Currency
 import com.example.exchangerates.model.CurrencyItem
+import com.example.exchangerates.util.REALIZATION
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
 class CurrencyViewModel(application: Application) : AndroidViewModel(application) {
-    var repo = Repository()
+    private var repo = Repository()
     val myCurrencyList: MutableLiveData<Response<Currency>> = MutableLiveData()
     private val context = application
 
@@ -41,6 +41,5 @@ class CurrencyViewModel(application: Application) : AndroidViewModel(application
             currency.Name.lowercase().contains(lowercaseQuery) ||
                     currency.CharCode.lowercase().contains(lowercaseQuery)
         }.sortedWith(compareBy({ it.Name }, { it.CharCode }))
-
     }
 }

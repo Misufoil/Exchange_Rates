@@ -12,19 +12,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.exchangerates.R
-import com.example.exchangerates.util.SEARCH_NEWS_TAME_DELAY
 import com.example.exchangerates.adapter.CurrencyAdapter
 import com.example.exchangerates.databinding.FragmentCurrencyBinding
+import com.example.exchangerates.util.SEARCH_NEWS_TAME_DELAY
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 class CurrencyFragment : Fragment(), MenuProvider {
     private var mBinding: FragmentCurrencyBinding? = null
     private val binding get() = mBinding!!
-    lateinit var viewModel: CurrencyViewModel
+    private lateinit var viewModel: CurrencyViewModel
     private val currencyAdapter by lazy { CurrencyAdapter() }
 
     override fun onCreateView(
@@ -71,11 +70,6 @@ class CurrencyFragment : Fragment(), MenuProvider {
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    override fun onDestroy() {
-        mBinding = null
-        super.onDestroy()
-    }
-
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.options_menu, menu)
     }
@@ -119,7 +113,11 @@ class CurrencyFragment : Fragment(), MenuProvider {
         } else {
             viewModel.filterAndSortCurrencies(query)
         }
-
         currencyAdapter.differ.submitList(filteredAndSortedCurrencies)
+    }
+
+    override fun onDestroyView() {
+        mBinding = null
+        super.onDestroyView()
     }
 }

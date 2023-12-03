@@ -15,5 +15,5 @@
         android:icon="@drawable/ic_baseline_favorite_24"
         android:title="to_favorite"
         app:showAsAction="ifRoom" />
-
+    
 </menu>
