@@ -1,8 +1,8 @@
 package com.example.exchangerates.model
 
-import java.util.*
+import java.time.LocalDate
 
 class GraphPoint(
-    val date: Date,
+    val date: LocalDate,
     val value: Double
 )

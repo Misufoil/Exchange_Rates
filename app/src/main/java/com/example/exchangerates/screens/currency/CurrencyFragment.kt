@@ -40,19 +40,23 @@ class CurrencyFragment : Fragment(), MenuProvider {
     }
 
     private fun init() {
-        viewModel = ViewModelProvider(this)[CurrencyViewModel::class.java]
-        viewModel.initDatabase()
+        viewModel = ViewModelProvider(
+            this,
+            CurrencyViewModelFactory(requireActivity().application)
+        )[CurrencyViewModel::class.java]
         binding.rvCurrency.adapter = currencyAdapter
+        viewModel.getCurrenciesRetrofit()
 
         try {
-            viewModel.getCurrenciesRetrofit()
-            viewModel.myCurrencyList.observe(viewLifecycleOwner) { response ->
-                val sortedList =
-                    response.body()!!.Valute.values.sortedBy { it.CharCode.lowercase() }
-                currencyAdapter.differ.submitList(sortedList)
+            viewModel.myCurrencyList.observe(viewLifecycleOwner) { currencyList ->
+                currencyAdapter.differ.submitList(currencyList)
             }
         } catch (e: Exception) {
             Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
+        }
+
+        viewModel.mySearchCurrencyList.observe(viewLifecycleOwner) { currencyList ->
+            currencyAdapter.differ.submitList(currencyList)
         }
 
         currencyAdapter.setOnItemClickListener {
@@ -108,12 +112,11 @@ class CurrencyFragment : Fragment(), MenuProvider {
     }
 
     private fun searchCurrency(query: String) {
-        val filteredAndSortedCurrencies = if (query.isEmpty()) {
-            viewModel.myCurrencyList.value?.body()?.Valute?.values?.sortedBy { it.CharCode.lowercase() }
+        if (query.isEmpty()) {
+            currencyAdapter.differ.submitList(viewModel.myCurrencyList.value)
         } else {
             viewModel.filterAndSortCurrencies(query)
         }
-        currencyAdapter.differ.submitList(filteredAndSortedCurrencies)
     }
 
     override fun onDestroyView() {

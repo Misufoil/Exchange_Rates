@@ -61,7 +61,7 @@ class FavoriteFragment : Fragment(), MenuProvider {
         }
 
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            0 or 0,
             ItemTouchHelper.START or ItemTouchHelper.END,
         ) {
             override fun onMove(
@@ -69,7 +69,7 @@ class FavoriteFragment : Fragment(), MenuProvider {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                return true
+                return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -83,7 +83,6 @@ class FavoriteFragment : Fragment(), MenuProvider {
                     show()
                 }
             }
-
         }
 
         ItemTouchHelper(itemTouchHelperCallback).apply {
